@@ -19,20 +19,15 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var healthConnectClient: HealthConnectClient
 
-    // List of permissions to request
     private val requiredPermissions = setOf(
         HealthPermission.getWritePermission(StepsRecord::class),
         HealthPermission.getReadPermission(StepsRecord::class)
     )
 
-    // Activity result launcher for requesting permissions
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             if (permissions.all { it.value }) {
-                // Permissions granted
                 readStepsData()
-            } else {
-                // Permissions denied
             }
         }
 
@@ -47,26 +42,20 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btn_write_steps).setOnClickListener {
             writeStepsData()
         }
-
-        // Initialize HealthConnectClient
         healthConnectClient = HealthConnectClient.getOrCreate(this)
 
-        // Request permissions
         requestPermissions()
     }
 
     private fun requestPermissions() {
         lifecycleScope.launch {
-            // Fetch currently granted permissions
             val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
 
-            // Filter out already granted permissions
             val permissionsToRequest = requiredPermissions.filterNot { grantedPermissions.contains(it) }
 
             if (permissionsToRequest.isNotEmpty()) {
                 requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
             } else {
-                // All permissions granted, proceed with app logic
                 readStepsData()
             }
         }
@@ -87,8 +76,6 @@ class MainActivity : AppCompatActivity() {
 
                 Log.i("MYTAG", "size=${response.records.size}")
 
-
-                // Handle retrieved records
                 response.records.forEach { record ->
                     val steps = record.count
                     val start = record.startTime
@@ -96,7 +83,6 @@ class MainActivity : AppCompatActivity() {
                     Log.i("MYTAG", "Steps: $steps, Start: $start, End: $end")
                 }
             } catch (e: Exception) {
-                // Handle errors (e.g., permissions not granted)
                 Log.i("MYTAG", "Exception: $e")
                 e.printStackTrace()
             }
@@ -124,8 +110,6 @@ class MainActivity : AppCompatActivity() {
                 Log.i("MYTAG", "Steps data written successfully.")
             } catch (e: Exception) {
                 Log.i("MYTAG", "Exception: $e")
-
-                // Handle errors
                 e.printStackTrace()
             }
         }
